@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -15,42 +16,48 @@
       background: #f9f9f9;
       overflow: hidden;
       height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
-    .scene {
-      display: none;
+    .container {
       width: 100%;
-      height: 100%;
-    }
-    .scene.active {
+      max-width: 1200px;
       display: flex;
+      gap: 20px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
 
     .sidebar {
-      width: 220px;
-      background: #e3f2fd;
-      padding: 24px 16px;
+      width: 280px;
+      background: #f0f8ff;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      border-right: 2px solid #bbdefb;
-      z-index: 10;
+      gap: 12px;
     }
 
     .btn {
-      padding: 14px;
+      padding: 14px 20px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       text-align: left;
       background: white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .btn:hover:not(:disabled) {
-      background: #e1f5fe;
       transform: translateY(-2px);
     }
 
@@ -60,10 +67,103 @@
       transform: none;
     }
 
+    .btn-green { background: #4CAF50; color: white; }
+    .btn-blue { background: #2196F3; color: white; }
+    .btn-orange { background: #FF9800; color: white; }
+    .btn-pink { background: #E91E63; color: white; }
+
+    .progress-panel {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .progress-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .progress-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .progress-status {
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-not-started {
+      background: #e0e0e0;
+      color: #777;
+    }
+
+    .status-in-progress {
+      background: #ffeb3b;
+      color: #333;
+    }
+
+    .status-completed {
+      background: #4caf50;
+      color: white;
+    }
+
+    .reset-btn {
+      width: 100%;
+      padding: 10px;
+      background: #9c27b0;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+
+    .reset-btn:hover {
+      background: #7b1fa2;
+    }
+
     .main-content {
       flex: 1;
       background: url('classroom.jpg') center/cover no-repeat;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      min-height: 600px;
+    }
+
+    .kitty-message {
+      background: rgba(255,255,255,0.9);
+      padding: 15px 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .mission {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 14px;
     }
 
     .modal {
@@ -81,9 +181,9 @@
 
     .modal-content {
       background: white;
-      width: 92%;
-      max-width: 900px;
-      height: 85vh;
+      width: 90%;
+      max-width: 800px;
+      height: 75vh;
       border-radius: 16px;
       overflow: hidden;
       display: flex;
@@ -103,6 +203,7 @@
     .modal-body {
       flex: 1;
       background: #f5f5f5;
+      overflow: hidden;
     }
 
     .modal-body iframe {
@@ -110,6 +211,7 @@
       height: 100%;
       border: none;
       display: block;
+      overflow: hidden;
     }
 
     .modal-footer {
@@ -166,49 +268,75 @@
 </head>
 <body>
 
-  <!-- Главная сцена -->
-  <div id="game" class="scene active">
+  <div class="container">
+    <!-- Левая панель -->
     <div class="sidebar">
-      <button id="boardBtn" class="btn">✏️ Поработать у доски</button>
-      <button id="tabletBtn" class="btn">📱 Поработать на планшете</button>
-      <button id="playBtn" class="btn">🎮 Поиграть в телефоне</button>
-      <button id="exitBtn" class="btn">🚪 Выйти из класса</button>
-    </div>
-    <div class="main-content"></div>
+      <h2 style="text-align: center; margin-bottom: 20px; color: #333;">🐾 Котик после уроков</h2>
 
-    <!-- Модальное окно для игр -->
-    <div class="modal" id="gameModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span id="modalTitle">Задание</span>
-          <button class="modal-btn close" onclick="closeGameModal()">×</button>
+      <button id="boardBtn" class="btn btn-green">✏️ Поработать у доски</button>
+      <button id="tabletBtn" class="btn btn-blue">📱 Поработать на планшете</button>
+      <button id="playBtn" class="btn btn-orange">🎮 Поиграть в телефоне</button>
+      <button id="exitBtn" class="btn btn-pink">🚪 Выйти из класса</button>
+
+      <!-- Прогресс-панель -->
+      <div class="progress-panel">
+        <div class="progress-title">Прогресс котика</div>
+        <div class="progress-item">
+          <span class="progress-label">Работа у доски:</span>
+          <span id="boardStatus" class="progress-status status-not-started">не пробовал</span>
         </div>
-        <div class="modal-body">
-          <iframe id="gameFrame" src="" allowfullscreen></iframe>
+        <div class="progress-item">
+          <span class="progress-label">Планшет:</span>
+          <span id="tabletStatus" class="progress-status status-not-started">не пробовал</span>
         </div>
-        <div class="modal-footer">
-          <button class="modal-btn back" onclick="exitGameWithoutSuccess()">Выйти без сохранения</button>
+        <div class="progress-item">
+          <span class="progress-label">Игры на телефоне:</span>
+          <span id="playStatus" class="progress-status status-not-started">не играл</span>
         </div>
+        <button class="reset-btn" onclick="resetProgress()">Сбросить прогресс</button>
+      </div>
+    </div>
+
+    <!-- Центральная часть -->
+    <div class="main-content">
+      <div class="mission">
+        Котик остался после уроков. Помоги ему исправиться!
+      </div>
+      <img src="classroom.jpg" alt="Класс" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+
+      <div class="kitty-message">
+        Котик ждёт тебя!
       </div>
     </div>
   </div>
 
-  <!-- Нейтральная концовка -->
-  <div id="ending-try" class="scene">
-    <div class="ending-scene">
-      <h2>Учительница:</h2>
-      <p>Ты молодец, что попытался! Но нужно усерднее учиться.</p>
-      <button class="back-btn" onclick="goToScene('game')">Вернуться в класс</button>
+  <!-- Модальное окно -->
+  <div class="modal" id="gameModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modalTitle">Задание</span>
+        <button class="modal-btn close" onclick="closeGameModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <iframe id="gameFrame" src="" allowfullscreen></iframe>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn back" onclick="exitGameWithoutSuccess()">Выйти без сохранения</button>
+      </div>
     </div>
   </div>
 
-  <!-- Успешная концовка -->
-  <div id="ending-success" class="scene">
-    <div class="ending-scene">
-      <h2>Учительница:</h2>
-      <p>Молодец! Сегодня ты постарался — можешь идти домой!</p>
-      <button class="back-btn" onclick="goToScene('game')">Играть снова</button>
-    </div>
+  <!-- Концовки -->
+  <div id="ending-try" class="scene ending-scene">
+    <h2>Учительница:</h2>
+    <p>Ты молодец, что попытался! Но нужно усерднее учиться.</p>
+    <button class="back-btn" onclick="goToScene('game')">Вернуться в класс</button>
+  </div>
+
+  <div id="ending-success" class="scene ending-scene">
+    <h2>Учительница:</h2>
+    <p>Молодец! Сегодня ты постарался — можешь идти домой!</p>
+    <button class="back-btn" onclick="goToScene('game')">Играть снова</button>
   </div>
 
   <script>
@@ -234,6 +362,25 @@
     function updateUI() {
       document.getElementById('boardBtn').disabled = STATE.boardStatus === 'completed';
       document.getElementById('tabletBtn').disabled = STATE.tabletStatus === 'completed';
+
+      // Обновление статусов
+      document.getElementById('boardStatus').className = 'progress-status status-' + STATE.boardStatus;
+      document.getElementById('boardStatus').textContent = getStateText(STATE.boardStatus);
+
+      document.getElementById('tabletStatus').className = 'progress-status status-' + STATE.tabletStatus;
+      document.getElementById('tabletStatus').textContent = getStateText(STATE.tabletStatus);
+
+      document.getElementById('playStatus').className = 'progress-status status-' + (STATE.played ? 'in-progress' : 'not-started');
+      document.getElementById('playStatus').textContent = STATE.played ? 'поиграл' : 'не играл';
+    }
+
+    function getStateText(status) {
+      switch(status) {
+        case 'not_started': return 'не пробовал';
+        case 'in_progress': return 'пробовал';
+        case 'completed': return 'пройдено';
+        default: return 'не пробовал';
+      }
     }
 
     function goToScene(sceneId) {
@@ -267,12 +414,11 @@
       alert('Keep trying... 😟');
     }
 
-    // === ОБРАБОТЧИК СООБЩЕНИЙ ИЗ ИГР ===
     window.addEventListener('message', (event) => {
       if (event.data.type === 'gameResult') {
         const { activity, score, message } = event.data;
-        alert(message); // Показывает "Well done! 🎉" или "Keep trying... 😟"
-        
+        alert(message);
+
         if (score >= 25) {
           if (activity === 'board') {
             STATE.boardStatus = 'completed';
@@ -292,7 +438,6 @@
         closeGameModal();
       }
     });
-    // === КОНЕЦ ОБРАБОТЧИКА ===
 
     function tryExit() {
       const boardDone = STATE.boardStatus === 'completed';
@@ -311,6 +456,16 @@
       }
     }
 
+    function resetProgress() {
+      if (confirm('Сбросить весь прогресс?')) {
+        STATE.boardStatus = 'not_started';
+        STATE.tabletStatus = 'not_started';
+        STATE.played = false;
+        saveState();
+        updateUI();
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
@@ -318,13 +473,14 @@
         openGameModal('Задание у доски', 'gameone.html', 'board')
       );
 
-      document.getElementById('tabletBtn').addEventListener('click', () => {
-        alert('Задание на планшете пока недоступно.');
-      });
+      document.getElementById('tabletBtn').addEventListener('click', () =>
+        openGameModal('Задание на планшете', 'gametwo.html', 'tablet')
+      );
 
       document.getElementById('playBtn').addEventListener('click', () => {
         STATE.played = true;
         saveState();
+        updateUI();
         alert('Ты немного отдохнул. Теперь вернись к заданиям!');
       });
 
