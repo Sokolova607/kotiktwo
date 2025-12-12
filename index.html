@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Котик после уроков</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: #f9f9f9;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .scene {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+    .scene.active {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: #e3f2fd;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-right: 2px solid #bbdefb;
+      z-index: 10;
+    }
+
+    .btn {
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #e1f5fe;
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .main-content {
+      flex: 1;
+      background: url('classroom.jpg') center/cover no-repeat;
+      position: relative;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .modal h2 {
+      color: #2196f3;
+      margin-bottom: 20px;
+    }
+
+    .modal p {
+      font-size: 18px;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .try { background: #ff9800; color: white; }
+    .success { background: #4caf50; color: white; }
+    .close { background: #9e9e9e; color: white; }
+
+    .ending-scene {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      text-align: center;
+      background: #f0f8ff;
+    }
+
+    .ending-scene h2 {
+      color: #1976d2;
+      margin-bottom: 20px;
+    }
+
+    .ending-scene p {
+      font-size: 20px;
+      max-width: 600px;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    .back-btn {
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Главная сцена -->
+  <div id="game" class="scene active">
+    <div class="sidebar">
+      <button id="boardBtn" class="btn">✏️ Поработать у доски</button>
+      <button id="tabletBtn" class="btn">📱 Поработать на планшете</button>
+      <button id="playBtn" class="btn">🎮 Поиграть в телефоне</button>
+      <button id="exitBtn" class="btn">🚪 Выйти из класса</button>
+    </div>
+    <div class="main-content"></div>
+  </div>
+
+  <!-- Модальное окно для имитации игры -->
+  <div class="modal" id="gameModal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Задание</h2>
+      <p id="modalText">Выполни задание и набери минимум 25 очков, чтобы завершить его успешно.</p>
+      <div class="modal-buttons">
+        <button class="modal-btn try" onclick="simulateAttempt()">Я попробовал (менее 25 очков)</button>
+        <button class="modal-btn success" onclick="simulateSuccess()">Я набрал 25+ очков (успешно)</button>
+      </div>
+      <br>
+      <button class="modal-btn close" onclick="closeModal()">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Концовки -->
+  <div id="ending-try" class="scene">
+    <div class="ending-scene">
+      <h2>Учительница:</h2>
+      <p>Ты молодец, что попытался! Но нужно усерднее учиться.</p>
+      <button class="back-btn" onclick="goToScene('game')">Вернуться в класс</button>
+    </div>
+  </div>
+
+  <div id="ending-success" class="scene">
+    <div class="ending-scene">
+      <h2>Учительница:</h2>
+      <p>Молодец! Сегодня ты постарался — можешь идти домой!</p>
+      <button class="back-btn" onclick="goToScene('game')">Играть снова</button>
+    </div>
+  </div>
+
+  <script>
+    const STATE = {
+      boardStatus: 'not_started',
+      tabletStatus: 'not_started',
+      played: false
+    };
+
+    function loadState() {
+      const saved = localStorage.getItem('kotikQuest');
+      if (saved) Object.assign(STATE, JSON.parse(saved));
+      updateUI();
+    }
+
+    function saveState() {
+      localStorage.setItem('kotikQuest', JSON.stringify(STATE));
+    }
+
+    function updateUI() {
+      document.getElementById('boardBtn').disabled = STATE.boardStatus === 'completed';
+      document.getElementById('tabletBtn').disabled = STATE.tabletStatus === 'completed';
+    }
+
+    function goToScene(id) {
+      document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'game') loadState();
+    }
+
+    let currentActivity = null;
+
+    function openModal(title, activity) {
+      document.getElementById('modalTitle').textContent = title;
+      currentActivity = activity;
+      document.getElementById('gameModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('gameModal').style.display = 'none';
+    }
+
+    function simulateAttempt() {
+      if (currentActivity === 'board') STATE.boardStatus = 'in_progress';
+      else if (currentActivity === 'tablet') STATE.tabletStatus = 'in_progress';
+      saveState();
+      closeModal();
+      alert('Ты начал задание, но не набрал достаточно очков.');
+    }
+
+    function simulateSuccess() {
+      if (currentActivity === 'board') STATE.boardStatus = 'completed';
+      else if (currentActivity === 'tablet') STATE.tabletStatus = 'completed';
+      saveState();
+      updateUI();
+      closeModal();
+      alert('Отлично! Задание выполнено на 100%.');
+    }
+
+    function tryExit() {
+      const boardDone = STATE.boardStatus === 'completed';
+      const tabletDone = STATE.tabletStatus === 'completed';
+      const hasProgress = STATE.boardStatus !== 'not_started' || STATE.tabletStatus !== 'not_started';
+
+      if (!hasProgress) {
+        alert('Учительница: Ты даже не начал работать! Останься и выполни задания.');
+        return;
+      }
+
+      if (boardDone && tabletDone) {
+        goToScene('ending-success');
+      } else {
+        goToScene('ending-try');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+
+      document.getElementById('boardBtn').addEventListener('click', () =>
+        openModal('Задание у доски', 'board')
+      );
+
+      document.getElementById('tabletBtn').addEventListener('click', () =>
+        openModal('Задание на планшете', 'tablet')
+      );
+
+      document.getElementById('playBtn').addEventListener('click', () => {
+        STATE.played = true;
+        saveState();
+        alert('Ты немного отдохнул. Теперь вернись к заданиям!');
+      });
+
+      document.getElementById('exitBtn').addEventListener('click', tryExit);
+    });
+  </script>
+</body>
+</html>
