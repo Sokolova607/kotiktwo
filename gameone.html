@@ -282,7 +282,6 @@
         let quizActive = false;
         let currentQuiz = null;
         
-        // Ваши картинки + эмодзи для остального
         const foodItems = [
             { name: 'carrot', emoji: '🥕', img: '' },
             { name: 'burger', emoji: '🍔', img: 'https://i.postimg.cc/z3kRKnc5/burger-hamburger-food-svgrepo-com.png' },
@@ -294,7 +293,6 @@
             { name: 'juice', emoji: '🧃', img: 'https://i.postimg.cc/bdR2kQFM/juice-svgrepo-com.png' }
         ];
         
-        // Кэшируем изображения
         const imageCache = {};
         foodItems.forEach(item => {
             if (item.img && item.img.trim() !== '') {
@@ -304,7 +302,6 @@
             }
         });
         
-        // Вопросы под новые продукты (грамматически корректные для 3 класса)
         const quizQuestions = [
             { question: "I have ___ cherries.", options: ["some", "any"], correct: "some" },
             { question: "Do you have ___ bananas?", options: ["some", "any"], correct: "any" },
@@ -338,7 +335,7 @@
         
         let currentFood = null;
         let lastSpawnTime = 0;
-        const spawnInterval = 1800; // медленная скорость
+        const spawnInterval = 1800;
         
         function init() {
             score = 0;
@@ -372,7 +369,7 @@
                 width: 60,
                 height: 60,
                 food,
-                speed: 1.8 + Math.random() * 0.7, // медленная скорость
+                speed: 1.8 + Math.random() * 0.7,
                 rotation: 0,
                 rotationSpeed: (Math.random() - 0.5) * 0.08
             };
@@ -501,17 +498,33 @@
             requestAnimationFrame(gameLoop);
         }
         
+        // === ИСПРАВЛЕННЫЕ ФУНКЦИИ С ОТПРАВКОЙ РЕЗУЛЬТАТА ===
         function victory() {
             gameRunning = false;
             victoryScoreElement.textContent = score;
             victoryScreen.style.display = 'flex';
+            
+            window.parent.postMessage({
+                type: 'gameResult',
+                activity: 'board',
+                score: score,
+                message: 'Well done! 🎉'
+            }, '*');
         }
         
         function gameOver() {
             gameRunning = false;
             finalScoreElement.textContent = score;
             gameOverScreen.style.display = 'flex';
+            
+            window.parent.postMessage({
+                type: 'gameResult',
+                activity: 'board',
+                score: score,
+                message: 'Keep trying... 😟'
+            }, '*');
         }
+        // === КОНЕЦ ИЗМЕНЕНИЙ ===
         
         function gameLoop() {
             if (!gameRunning) return;
@@ -532,7 +545,6 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // Управление стрелками
         window.addEventListener('keydown', (e) => {
             if (!gameRunning || quizActive) return;
             if (e.key === 'ArrowLeft') {
@@ -543,7 +555,6 @@
             }
         });
         
-        // Управление мышью
         canvas.addEventListener('mousemove', (e) => {
             if (!gameRunning || quizActive) return;
             const rect = canvas.getBoundingClientRect();
