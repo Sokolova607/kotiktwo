@@ -212,7 +212,6 @@
   </div>
 
   <script>
-    // ========== СОСТОЯНИЕ ==========
     const STATE = {
       boardStatus: 'not_started',
       tabletStatus: 'not_started',
@@ -265,12 +264,15 @@
       }
       saveState();
       closeGameModal();
-      alert('Ты начал задание, но не завершил его до конца.');
+      alert('Keep trying... 😟');
     }
 
+    // === ОБРАБОТЧИК СООБЩЕНИЙ ИЗ ИГР ===
     window.addEventListener('message', (event) => {
       if (event.data.type === 'gameResult') {
-        const { activity, score } = event.data;
+        const { activity, score, message } = event.data;
+        alert(message); // Показывает "Well done! 🎉" или "Keep trying... 😟"
+        
         if (score >= 25) {
           if (activity === 'board') {
             STATE.boardStatus = 'completed';
@@ -279,7 +281,6 @@
           }
           saveState();
           updateUI();
-          alert('Отлично! Задание выполнено на 100%.');
         } else {
           if (activity === 'board') {
             STATE.boardStatus = 'in_progress';
@@ -287,11 +288,11 @@
             STATE.tabletStatus = 'in_progress';
           }
           saveState();
-          alert('Ты набрал ' + score + ' очков. Нужно хотя бы 25!');
         }
         closeGameModal();
       }
     });
+    // === КОНЕЦ ОБРАБОТЧИКА ===
 
     function tryExit() {
       const boardDone = STATE.boardStatus === 'completed';
