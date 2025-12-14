@@ -283,12 +283,21 @@
         </div>
       </div>
 
-      <!-- Модальное окно для учительницы -->
+      <!-- Модальное окно для учительницы (общее) -->
       <div class="modal" id="teacherModal">
         <div class="modal-content">
           <img id="teacherImage" class="modal-image" src="" alt="Teacher">
           <div class="modal-text" id="teacherMessage"></div>
           <button class="modal-btn" onclick="closeTeacher()">Вернуться в класс</button>
+        </div>
+      </div>
+
+      <!-- Модальное окно для похвалы после игры -->
+      <div class="modal" id="praiseModal">
+        <div class="modal-content">
+          <img src="kindteacher.jpg" class="modal-image" alt="Praise">
+          <div class="modal-text" id="praiseMessage">Молодец! Ты отлично справился с заданием у доски!</div>
+          <button class="modal-btn" onclick="closePraise()">Продолжить</button>
         </div>
       </div>
     </div>
@@ -318,7 +327,6 @@
       document.getElementById('boardBtn').disabled = STATE.boardStatus === 'completed';
       document.getElementById('tabletBtn').disabled = STATE.tabletStatus === 'completed';
 
-      // Обновление статусов
       document.getElementById('boardStatus').className = 'progress-status status-' + STATE.boardStatus;
       document.getElementById('boardStatus').textContent = getStateText(STATE.boardStatus);
 
@@ -337,61 +345,6 @@
         default: return 'не пробовал';
       }
     }
-
-    function goToScene(sceneId) {
-      document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-      document.getElementById(sceneId).classList.add('active');
-      if (sceneId === 'game') loadState();
-    }
-
-    let currentActivity = null;
-
-    function openGame(title, url, activity) {
-      document.getElementById('gameFrame').src = url;
-      currentActivity = activity;
-      document.getElementById('gameFrameContainer').style.display = 'block';
-    }
-
-    function closeGame() {
-      document.getElementById('gameFrameContainer').style.display = 'none';
-      document.getElementById('gameFrame').src = '';
-    }
-
-    function exitGameWithoutSuccess() {
-      if (currentActivity === 'board') {
-        STATE.boardStatus = 'in_progress';
-      } else if (currentActivity === 'tablet') {
-        STATE.tabletStatus = 'in_progress';
-      }
-      saveState();
-      closeGame();
-      alert('Keep trying... 😟');
-    }
-
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'gameResult') {
-        const { activity, score, message } = event.data;
-        alert(message);
-
-        if (score >= 25) {
-          if (activity === 'board') {
-            STATE.boardStatus = 'completed';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'completed';
-          }
-          saveState();
-          updateUI();
-        } else {
-          if (activity === 'board') {
-            STATE.boardStatus = 'in_progress';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'in_progress';
-          }
-          saveState();
-        }
-        closeGame();
-      }
-    });
 
     function tryExit() {
       const boardDone = STATE.boardStatus === 'completed';
@@ -417,6 +370,15 @@
       document.getElementById('teacherModal').style.display = 'none';
     }
 
+    function showPraise() {
+      document.getElementById('praiseModal').style.display = 'flex';
+    }
+
+    function closePraise() {
+      document.getElementById('praiseModal').style.display = 'none';
+      closeGame();
+    }
+
     function showPreview(imageSrc, text) {
       document.getElementById('previewImage').src = imageSrc;
       document.getElementById('previewText').textContent = text;
@@ -437,6 +399,17 @@
       }
     }
 
+    function openGame(url, activity) {
+      currentActivity = activity;
+      document.getElementById('gameFrame').src = url;
+      document.getElementById('gameFrameContainer').style.display = 'block';
+    }
+
+    function closeGame() {
+      document.getElementById('gameFrameContainer').style.display = 'none';
+      document.getElementById('gameFrame').src = '';
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
@@ -445,7 +418,7 @@
       );
       document.getElementById('boardBtn').addEventListener('mouseleave', closePreview);
       document.getElementById('boardBtn').addEventListener('click', () =>
-        openGame('Задание у доски', 'gameone.html', 'board')
+        openGame('gameone.html', 'board')
       );
 
       document.getElementById('tabletBtn').addEventListener('mouseenter', () =>
@@ -453,7 +426,7 @@
       );
       document.getElementById('tabletBtn').addEventListener('mouseleave', closePreview);
       document.getElementById('tabletBtn').addEventListener('click', () =>
-        openGame('Задание на планшете', 'gametwo.html', 'tablet')
+        openGame('gametwo.html', 'tablet')
       );
 
       document.getElementById('playBtn').addEventListener('click', () => {
@@ -470,8 +443,41 @@
           closeGame();
           closePreview();
           closeTeacher();
+          closePraise();
         }
       });
+    });
+
+    let currentActivity = null;
+
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'gameResult') {
+        const { activity, score } = event.data;
+
+        if (score >= 25) {
+          if (activity === 'board') {
+            STATE.boardStatus = 'completed';
+            saveState();
+            updateUI();
+            showPraise(); // ← ПОХВАЛА СРАЗУ ПОСЛЕ ИГРЫ
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'completed';
+            saveState();
+            updateUI();
+            // Можно добавить похвалу и для планшета позже
+          }
+        } else {
+          if (activity === 'board') {
+            STATE.boardStatus = 'in_progress';
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'in_progress';
+          }
+          saveState();
+          updateUI();
+          alert('Keep trying... 😟');
+          closeGame();
+        }
+      }
     });
   </script>
 </body>
