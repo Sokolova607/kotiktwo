@@ -205,57 +205,7 @@
       margin-top: 20px;
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: white;
-      width: 90%;
-      max-width: 800px;
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-      max-height: 600px;
-      overflow-y: auto;
-    }
-
-    .modal-image {
-      width: 100%;
-      max-width: 300px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    .modal-text {
-      font-size: 18px;
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-
-    .modal-btn {
-      padding: 10px 20px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.2s;
-    }
-
-    .modal-btn:hover {
-      background: #1976d2;
-    }
+    /* Убрали модальное окно — игра открывается во фрейме */
   </style>
 </head>
 <body>
@@ -314,23 +264,7 @@
         <iframe id="gameFrame" src="" allowfullscreen></iframe>
       </div>
 
-      <!-- Модальное окно для учительницы (общее) -->
-      <div class="modal" id="teacherModal">
-        <div class="modal-content">
-          <img id="teacherImage" class="modal-image" src="" alt="Teacher">
-          <div class="modal-text" id="teacherMessage"></div>
-          <button class="modal-btn" onclick="closeTeacher()">Вернуться в класс</button>
-        </div>
-      </div>
-
-      <!-- Модальное окно для похвалы после игры -->
-      <div class="modal" id="praiseModal">
-        <div class="modal-content">
-          <img src="kindteacher.jpg" class="modal-image" alt="Praise">
-          <div class="modal-text" id="praiseMessage">Молодец! Ты отлично справился с заданием у доски!</div>
-          <button class="modal-btn" onclick="closePraise()">Продолжить</button>
-        </div>
-      </div>
+      <!-- Убрали модальное окно — игра открывается во фрейме -->
     </div>
   </div>
 
@@ -383,31 +317,12 @@
       const hasAnyProgress = STATE.boardStatus !== 'not_started' || STATE.tabletStatus !== 'not_started';
 
       if (!hasAnyProgress) {
-        showTeacher('angryteacher.jpg', 'Ты не закончил работу, вернись в класс.');
+        alert('Ты не закончил работу, вернись в класс.');
       } else if (boardDone && tabletDone) {
-        showTeacher('kindteacher.jpg', 'Молодец! Сегодня ты постарался — можешь идти домой!');
+        alert('Молодец! Сегодня ты постарался — можешь идти домой!');
       } else {
-        showTeacher('angryteacher.jpg', 'Ты молодец, что попытался! Но нужно усерднее учиться.');
+        alert('Ты молодец, что попытался! Но нужно усерднее учиться.');
       }
-    }
-
-    function showTeacher(imageSrc, message) {
-      document.getElementById('teacherImage').src = imageSrc;
-      document.getElementById('teacherMessage').textContent = message;
-      document.getElementById('teacherModal').style.display = 'flex';
-    }
-
-    function closeTeacher() {
-      document.getElementById('teacherModal').style.display = 'none';
-    }
-
-    function showPraise() {
-      document.getElementById('praiseModal').style.display = 'flex';
-    }
-
-    function closePraise() {
-      document.getElementById('praiseModal').style.display = 'none';
-      closeGame();
     }
 
     function resetProgress() {
@@ -473,8 +388,6 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeGame();
-          closeTeacher();
-          closePraise();
         }
       });
     });
@@ -490,7 +403,7 @@
             STATE.boardStatus = 'completed';
             saveState();
             updateUI();
-            showPraise();
+            alert('Well done! 🎉');
           } else if (activity === 'tablet') {
             STATE.tabletStatus = 'completed';
             saveState();
@@ -511,4 +424,4 @@
     });
   </script>
 </body>
-                                                                                                        </html>
+</html>
