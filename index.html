@@ -196,16 +196,43 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .game-frame {
+    .game-frame,
+    .success-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-width: 800px;
-      height: 600px;
-      border: none;
+      height: 100%;
       display: none;
-      margin-top: 20px;
     }
 
-    /* Убрали модальное окно — игра открывается во фрейме */
+    .game-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .success-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255,255,255,0.95);
+      z-index: 200;
+    }
+
+    .success-screen img {
+      max-width: 80%;
+      max-height: 70%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .success-screen .message {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4CAF50;
+    }
   </style>
 </head>
 <body>
@@ -218,7 +245,7 @@
       <div class="btn-container">
         <button id="boardBtn" class="btn btn-green">✏️ Поработать у доски</button>
         <div class="tooltip" id="boardTooltip">
-          <img src="board.png" alt="Доска">
+          <img src="board.jpg" alt="Доска">
           Задание у доски — решай примеры!
         </div>
       </div>
@@ -254,17 +281,21 @@
     </div>
 
     <!-- Центральная часть -->
-    <div class="main-content">
+    <div class="main-content" id="mainContent">
       <div class="kitty-message">
         Котик ждёт тебя!
       </div>
 
-      <!-- Игра -->
+      <!-- Игровой фрейм (полноэкранный) -->
       <div class="game-frame" id="gameFrameContainer">
         <iframe id="gameFrame" src="" allowfullscreen></iframe>
       </div>
 
-      <!-- Убрали модальное окно — игра открывается во фрейме -->
+      <!-- Экран успеха -->
+      <div class="success-screen" id="successScreen">
+        <img src="kindteacher.jpg" alt="Добрая учительница">
+        <div class="message">Well done! 🎉</div>
+      </div>
     </div>
   </div>
 
@@ -336,20 +367,27 @@
     }
 
     function openGame(url, activity) {
-      currentActivity = activity;
-      document.getElementById('gameFrame').src = url;
-      document.getElementById('gameFrameContainer').style.display = 'block';
+      window.currentActivity = activity;
+      const frame = document.getElementById('gameFrame');
+      const container = document.getElementById('gameFrameContainer');
+      const successScreen = document.getElementById('successScreen');
+
+      // Скрыть успех, показать игру
+      successScreen.style.display = 'none';
+      container.style.display = 'block';
+      frame.src = url;
     }
 
     function closeGame() {
       document.getElementById('gameFrameContainer').style.display = 'none';
       document.getElementById('gameFrame').src = '';
+      document.getElementById('successScreen').style.display = 'none';
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
-      // Наведение — работает
+      // Наведение — показывает board.jpg в tooltip
       const boardBtn = document.getElementById('boardBtn');
       const boardTooltip = document.getElementById('boardTooltip');
       boardBtn.addEventListener('mouseenter', () => {
@@ -403,7 +441,11 @@
             STATE.boardStatus = 'completed';
             saveState();
             updateUI();
-            alert('Well done! 🎉');
+
+            // Показать экран успеха
+            document.getElementById('gameFrameContainer').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'flex';
+            return;
           } else if (activity === 'tablet') {
             STATE.tabletStatus = 'completed';
             saveState();
@@ -418,10 +460,10 @@
           saveState();
           updateUI();
           alert('Keep trying... 😟');
-          closeGame();
         }
+        closeGame();
       }
     });
   </script>
 </body>
-</html>
+  </html>
