@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -40,6 +39,15 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+    }
+
+    .mission {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1.4;
     }
 
     .btn {
@@ -139,7 +147,6 @@
 
     .main-content {
       flex: 1;
-      background: url('classroom.jpg') center/cover no-repeat;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -147,23 +154,31 @@
       justify-content: center;
       padding: 20px;
       min-height: 600px;
+      background: url('classroom.jpg') center/cover no-repeat;
     }
 
     .kitty-message {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(255,255,255,0.9);
-      padding: 15px 20px;
+      padding: 10px 20px;
       border-radius: 15px;
-      margin-top: 20px;
       text-align: center;
       font-size: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .mission {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-      font-size: 14px;
+    .game-frame {
+      width: 100%;
+      max-width: 800px;
+      height: 500px;
+      border: none;
+      display: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
     }
 
     .modal {
@@ -182,87 +197,38 @@
     .modal-content {
       background: white;
       width: 90%;
-      max-width: 800px;
-      height: 75vh;
-      border-radius: 16px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-header {
-      padding: 12px 20px;
-      background: #2196f3;
-      color: white;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-body {
-      flex: 1;
-      background: #f5f5f5;
-      overflow: hidden;
-    }
-
-    .modal-body iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-      overflow: hidden;
-    }
-
-    .modal-footer {
-      padding: 12px 20px;
-      background: #f9f9f9;
-      text-align: right;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .modal-btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .close { background: #9e9e9e; color: white; }
-    .back { background: #ff9800; color: white; }
-
-    .ending-scene {
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      max-width: 600px;
       padding: 30px;
+      border-radius: 16px;
       text-align: center;
-      background: #f0f8ff;
     }
 
-    .ending-scene h2 {
-      color: #1976d2;
+    .modal-image {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 10px;
       margin-bottom: 20px;
     }
 
-    .ending-scene p {
-      font-size: 20px;
-      max-width: 600px;
+    .modal-text {
+      font-size: 18px;
+      margin-bottom: 20px;
       line-height: 1.5;
-      margin-bottom: 30px;
     }
 
-    .back-btn {
-      padding: 12px 24px;
-      font-size: 18px;
+    .modal-btn {
+      padding: 10px 20px;
       background: #2196f3;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+
+    .modal-btn:hover {
+      background: #1976d2;
     }
   </style>
 </head>
@@ -271,7 +237,7 @@
   <div class="container">
     <!-- Левая панель -->
     <div class="sidebar">
-      <h2 style="text-align: center; margin-bottom: 20px; color: #333;">🐾 Котик после уроков</h2>
+      <div class="mission">Котик плохо учился и его оставили после уроков. Помоги котику выполнить все задания.</div>
 
       <button id="boardBtn" class="btn btn-green">✏️ Поработать у доски</button>
       <button id="tabletBtn" class="btn btn-blue">📱 Поработать на планшете</button>
@@ -299,44 +265,24 @@
 
     <!-- Центральная часть -->
     <div class="main-content">
-      <div class="mission">
-        Котик остался после уроков. Помоги ему исправиться!
-      </div>
-      <img src="classroom.jpg" alt="Класс" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-
       <div class="kitty-message">
         Котик ждёт тебя!
       </div>
-    </div>
-  </div>
 
-  <!-- Модальное окно -->
-  <div class="modal" id="gameModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span id="modalTitle">Задание</span>
-        <button class="modal-btn close" onclick="closeGameModal()">×</button>
-      </div>
-      <div class="modal-body">
+      <!-- Игра -->
+      <div class="game-frame" id="gameFrameContainer">
         <iframe id="gameFrame" src="" allowfullscreen></iframe>
       </div>
-      <div class="modal-footer">
-        <button class="modal-btn back" onclick="exitGameWithoutSuccess()">Выйти без сохранения</button>
+
+      <!-- Модальное окно для учительницы -->
+      <div class="modal" id="teacherModal">
+        <div class="modal-content">
+          <img id="teacherImage" class="modal-image" src="" alt="Teacher">
+          <div class="modal-text" id="teacherMessage"></div>
+          <button class="modal-btn" onclick="closeTeacher()">Вернуться в класс</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Концовки -->
-  <div id="ending-try" class="scene ending-scene">
-    <h2>Учительница:</h2>
-    <p>Ты молодец, что попытался! Но нужно усерднее учиться.</p>
-    <button class="back-btn" onclick="goToScene('game')">Вернуться в класс</button>
-  </div>
-
-  <div id="ending-success" class="scene ending-scene">
-    <h2>Учительница:</h2>
-    <p>Молодец! Сегодня ты постарался — можешь идти домой!</p>
-    <button class="back-btn" onclick="goToScene('game')">Играть снова</button>
   </div>
 
   <script>
@@ -383,77 +329,31 @@
       }
     }
 
-    function goToScene(sceneId) {
-      document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-      document.getElementById(sceneId).classList.add('active');
-      if (sceneId === 'game') loadState();
-    }
-
-    let currentActivity = null;
-
-    function openGameModal(title, url, activity) {
-      document.getElementById('modalTitle').textContent = title;
-      document.getElementById('gameFrame').src = url;
-      currentActivity = activity;
-      document.getElementById('gameModal').style.display = 'flex';
-    }
-
-    function closeGameModal() {
-      document.getElementById('gameModal').style.display = 'none';
-      document.getElementById('gameFrame').src = '';
-    }
-
-    function exitGameWithoutSuccess() {
-      if (currentActivity === 'board') {
-        STATE.boardStatus = 'in_progress';
-      } else if (currentActivity === 'tablet') {
-        STATE.tabletStatus = 'in_progress';
-      }
-      saveState();
-      closeGameModal();
-      alert('Keep trying... 😟');
-    }
-
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'gameResult') {
-        const { activity, score, message } = event.data;
-        alert(message);
-
-        if (score >= 25) {
-          if (activity === 'board') {
-            STATE.boardStatus = 'completed';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'completed';
-          }
-          saveState();
-          updateUI();
-        } else {
-          if (activity === 'board') {
-            STATE.boardStatus = 'in_progress';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'in_progress';
-          }
-          saveState();
-        }
-        closeGameModal();
-      }
-    });
-
     function tryExit() {
       const boardDone = STATE.boardStatus === 'completed';
       const tabletDone = STATE.tabletStatus === 'completed';
       const hasAnyProgress = STATE.boardStatus !== 'not_started' || STATE.tabletStatus !== 'not_started';
 
       if (!hasAnyProgress) {
-        alert('Учительница: Ты даже не начал работать! Останься и выполни задания.');
-        return;
-      }
-
-      if (boardDone && tabletDone) {
-        goToScene('ending-success');
+        // Злая учительница
+        document.getElementById('teacherImage').src = 'angryteacher.jpg';
+        document.getElementById('teacherMessage').textContent = 'Ты не закончил работу, вернись в класс.';
+        document.getElementById('teacherModal').style.display = 'flex';
+      } else if (boardDone && tabletDone) {
+        // Добрая учительница
+        document.getElementById('teacherImage').src = 'kindteacher.jpg';
+        document.getElementById('teacherMessage').textContent = 'Молодец! Сегодня ты постарался — можешь идти домой!';
+        document.getElementById('teacherModal').style.display = 'flex';
       } else {
-        goToScene('ending-try');
+        // Злая учительница (частично выполнено)
+        document.getElementById('teacherImage').src = 'angryteacher.jpg';
+        document.getElementById('teacherMessage').textContent = 'Ты молодец, что попытался! Но нужно усерднее учиться.';
+        document.getElementById('teacherModal').style.display = 'flex';
       }
+    }
+
+    function closeTeacher() {
+      document.getElementById('teacherModal').style.display = 'none';
     }
 
     function resetProgress() {
@@ -470,11 +370,11 @@
       loadState();
 
       document.getElementById('boardBtn').addEventListener('click', () =>
-        openGameModal('Задание у доски', 'gameone.html', 'board')
+        openGame('gameone.html', 'board')
       );
 
       document.getElementById('tabletBtn').addEventListener('click', () =>
-        openGameModal('Задание на планшете', 'gametwo.html', 'tablet')
+        openGame('gametwo.html', 'tablet')
       );
 
       document.getElementById('playBtn').addEventListener('click', () => {
@@ -486,9 +386,47 @@
 
       document.getElementById('exitBtn').addEventListener('click', tryExit);
 
+      function openGame(url, activity) {
+        currentActivity = activity;
+        document.getElementById('gameFrame').src = url;
+        document.getElementById('gameFrameContainer').style.display = 'block';
+      }
+
+      function closeGame() {
+        document.getElementById('gameFrameContainer').style.display = 'none';
+        document.getElementById('gameFrame').src = '';
+      }
+
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeGameModal();
+        if (e.key === 'Escape') closeGame();
       });
+    });
+
+    let currentActivity = null;
+
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'gameResult') {
+        const { activity, score } = event.data;
+        if (score >= 25) {
+          if (activity === 'board') {
+            STATE.boardStatus = 'completed';
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'completed';
+          }
+          alert('Well done! 🎉');
+        } else {
+          if (activity === 'board') {
+            STATE.boardStatus = 'in_progress';
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'in_progress';
+          }
+          alert('Keep trying... 😟');
+        }
+        saveState();
+        updateUI();
+        document.getElementById('gameFrameContainer').style.display = 'none';
+        document.getElementById('gameFrame').src = '';
+      }
     });
   </script>
 </body>
