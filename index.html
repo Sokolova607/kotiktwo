@@ -63,6 +63,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      position: relative;
     }
 
     .btn:hover:not(:disabled) {
@@ -79,6 +80,31 @@
     .btn-blue { background: #2196F3; color: white; }
     .btn-orange { background: #FF9800; color: white; }
     .btn-pink { background: #E91E63; color: white; }
+
+    /* Всплывающая подсказка */
+    .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      display: none;
+      width: 200px;
+      text-align: center;
+    }
+
+    .tooltip img {
+      width: 100%;
+      max-width: 120px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
 
     .progress-panel {
       background: white;
@@ -176,8 +202,6 @@
       height: 500px;
       border: none;
       display: none;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       margin-top: 20px;
     }
 
@@ -239,8 +263,22 @@
     <div class="sidebar">
       <div class="mission">Котик плохо учился и его оставили после уроков. Помоги котику выполнить все задания.</div>
 
-      <button id="boardBtn" class="btn btn-green">✏️ Поработать у доски</button>
-      <button id="tabletBtn" class="btn btn-blue">📱 Поработать на планшете</button>
+      <div class="btn-container">
+        <button id="boardBtn" class="btn btn-green">✏️ Поработать у доски</button>
+        <div class="tooltip" id="boardTooltip">
+          <img src="board.png" alt="Доска">
+          Задание у доски — решай примеры!
+        </div>
+      </div>
+
+      <div class="btn-container">
+        <button id="tabletBtn" class="btn btn-blue">📱 Поработать на планшете</button>
+        <div class="tooltip" id="tabletTooltip">
+          <img src="tablet.png" alt="Планшет">
+          Задание на планшете — отвечай на вопросы!
+        </div>
+      </div>
+
       <button id="playBtn" class="btn btn-orange">🎮 Поиграть в телефоне</button>
       <button id="exitBtn" class="btn btn-pink">🚪 Выйти из класса</button>
 
@@ -272,15 +310,6 @@
       <!-- Игра -->
       <div class="game-frame" id="gameFrameContainer">
         <iframe id="gameFrame" src="" allowfullscreen></iframe>
-      </div>
-
-      <!-- Модальное окно для предпросмотра -->
-      <div class="modal" id="previewModal">
-        <div class="modal-content">
-          <img id="previewImage" class="modal-image" src="" alt="Preview">
-          <div class="modal-text" id="previewText"></div>
-          <button class="modal-btn" onclick="closePreview()">Закрыть</button>
-        </div>
       </div>
 
       <!-- Модальное окно для учительницы (общее) -->
@@ -379,16 +408,6 @@
       closeGame();
     }
 
-    function showPreview(imageSrc, text) {
-      document.getElementById('previewImage').src = imageSrc;
-      document.getElementById('previewText').textContent = text;
-      document.getElementById('previewModal').style.display = 'flex';
-    }
-
-    function closePreview() {
-      document.getElementById('previewModal').style.display = 'none';
-    }
-
     function resetProgress() {
       if (confirm('Сбросить весь прогресс?')) {
         STATE.boardStatus = 'not_started';
@@ -413,18 +432,29 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
-      document.getElementById('boardBtn').addEventListener('mouseenter', () =>
-        showPreview('board.png', 'Задание у доски — решай примеры!')
-      );
-      document.getElementById('boardBtn').addEventListener('mouseleave', closePreview);
+      // Наведение без мигания
+      const boardBtn = document.getElementById('boardBtn');
+      const boardTooltip = document.getElementById('boardTooltip');
+      boardBtn.addEventListener('mouseenter', () => {
+        boardTooltip.style.display = 'block';
+      });
+      boardBtn.addEventListener('mouseleave', () => {
+        boardTooltip.style.display = 'none';
+      });
+
+      const tabletBtn = document.getElementById('tabletBtn');
+      const tabletTooltip = document.getElementById('tabletTooltip');
+      tabletBtn.addEventListener('mouseenter', () => {
+        tabletTooltip.style.display = 'block';
+      });
+      tabletBtn.addEventListener('mouseleave', () => {
+        tabletTooltip.style.display = 'none';
+      });
+
       document.getElementById('boardBtn').addEventListener('click', () =>
         openGame('gameone.html', 'board')
       );
 
-      document.getElementById('tabletBtn').addEventListener('mouseenter', () =>
-        showPreview('tablet.png', 'Задание на планшете — отвечай на вопросы!')
-      );
-      document.getElementById('tabletBtn').addEventListener('mouseleave', closePreview);
       document.getElementById('tabletBtn').addEventListener('click', () =>
         openGame('gametwo.html', 'tablet')
       );
@@ -441,7 +471,6 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeGame();
-          closePreview();
           closeTeacher();
           closePraise();
         }
@@ -459,12 +488,11 @@
             STATE.boardStatus = 'completed';
             saveState();
             updateUI();
-            showPraise(); // ← ПОХВАЛА СРАЗУ ПОСЛЕ ИГРЫ
+            showPraise();
           } else if (activity === 'tablet') {
             STATE.tabletStatus = 'completed';
             saveState();
             updateUI();
-            // Можно добавить похвалу и для планшета позже
           }
         } else {
           if (activity === 'board') {
