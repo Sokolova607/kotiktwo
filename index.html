@@ -274,6 +274,15 @@
         <iframe id="gameFrame" src="" allowfullscreen></iframe>
       </div>
 
+      <!-- Модальное окно для предпросмотра -->
+      <div class="modal" id="previewModal">
+        <div class="modal-content">
+          <img id="previewImage" class="modal-image" src="" alt="Preview">
+          <div class="modal-text" id="previewText"></div>
+          <button class="modal-btn" onclick="closePreview()">Закрыть</button>
+        </div>
+      </div>
+
       <!-- Модальное окно для учительницы -->
       <div class="modal" id="teacherModal">
         <div class="modal-content">
@@ -329,31 +338,93 @@
       }
     }
 
+    function goToScene(sceneId) {
+      document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+      document.getElementById(sceneId).classList.add('active');
+      if (sceneId === 'game') loadState();
+    }
+
+    let currentActivity = null;
+
+    function openGame(title, url, activity) {
+      document.getElementById('gameFrame').src = url;
+      currentActivity = activity;
+      document.getElementById('gameFrameContainer').style.display = 'block';
+    }
+
+    function closeGame() {
+      document.getElementById('gameFrameContainer').style.display = 'none';
+      document.getElementById('gameFrame').src = '';
+    }
+
+    function exitGameWithoutSuccess() {
+      if (currentActivity === 'board') {
+        STATE.boardStatus = 'in_progress';
+      } else if (currentActivity === 'tablet') {
+        STATE.tabletStatus = 'in_progress';
+      }
+      saveState();
+      closeGame();
+      alert('Keep trying... 😟');
+    }
+
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'gameResult') {
+        const { activity, score, message } = event.data;
+        alert(message);
+
+        if (score >= 25) {
+          if (activity === 'board') {
+            STATE.boardStatus = 'completed';
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'completed';
+          }
+          saveState();
+          updateUI();
+        } else {
+          if (activity === 'board') {
+            STATE.boardStatus = 'in_progress';
+          } else if (activity === 'tablet') {
+            STATE.tabletStatus = 'in_progress';
+          }
+          saveState();
+        }
+        closeGame();
+      }
+    });
+
     function tryExit() {
       const boardDone = STATE.boardStatus === 'completed';
       const tabletDone = STATE.tabletStatus === 'completed';
       const hasAnyProgress = STATE.boardStatus !== 'not_started' || STATE.tabletStatus !== 'not_started';
 
       if (!hasAnyProgress) {
-        // Злая учительница
-        document.getElementById('teacherImage').src = 'angryteacher.jpg';
-        document.getElementById('teacherMessage').textContent = 'Ты не закончил работу, вернись в класс.';
-        document.getElementById('teacherModal').style.display = 'flex';
+        showTeacher('angryteacher.jpg', 'Ты не закончил работу, вернись в класс.');
       } else if (boardDone && tabletDone) {
-        // Добрая учительница
-        document.getElementById('teacherImage').src = 'kindteacher.jpg';
-        document.getElementById('teacherMessage').textContent = 'Молодец! Сегодня ты постарался — можешь идти домой!';
-        document.getElementById('teacherModal').style.display = 'flex';
+        showTeacher('kindteacher.jpg', 'Молодец! Сегодня ты постарался — можешь идти домой!');
       } else {
-        // Злая учительница (частично выполнено)
-        document.getElementById('teacherImage').src = 'angryteacher.jpg';
-        document.getElementById('teacherMessage').textContent = 'Ты молодец, что попытался! Но нужно усерднее учиться.';
-        document.getElementById('teacherModal').style.display = 'flex';
+        showTeacher('angryteacher.jpg', 'Ты молодец, что попытался! Но нужно усерднее учиться.');
       }
+    }
+
+    function showTeacher(imageSrc, message) {
+      document.getElementById('teacherImage').src = imageSrc;
+      document.getElementById('teacherMessage').textContent = message;
+      document.getElementById('teacherModal').style.display = 'flex';
     }
 
     function closeTeacher() {
       document.getElementById('teacherModal').style.display = 'none';
+    }
+
+    function showPreview(imageSrc, text) {
+      document.getElementById('previewImage').src = imageSrc;
+      document.getElementById('previewText').textContent = text;
+      document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none';
     }
 
     function resetProgress() {
@@ -369,12 +440,20 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
 
+      document.getElementById('boardBtn').addEventListener('mouseenter', () =>
+        showPreview('board.png', 'Задание у доски — решай примеры!')
+      );
+      document.getElementById('boardBtn').addEventListener('mouseleave', closePreview);
       document.getElementById('boardBtn').addEventListener('click', () =>
-        openGame('gameone.html', 'board')
+        openGame('Задание у доски', 'gameone.html', 'board')
       );
 
+      document.getElementById('tabletBtn').addEventListener('mouseenter', () =>
+        showPreview('tablet.png', 'Задание на планшете — отвечай на вопросы!')
+      );
+      document.getElementById('tabletBtn').addEventListener('mouseleave', closePreview);
       document.getElementById('tabletBtn').addEventListener('click', () =>
-        openGame('gametwo.html', 'tablet')
+        openGame('Задание на планшете', 'gametwo.html', 'tablet')
       );
 
       document.getElementById('playBtn').addEventListener('click', () => {
@@ -386,47 +465,13 @@
 
       document.getElementById('exitBtn').addEventListener('click', tryExit);
 
-      function openGame(url, activity) {
-        currentActivity = activity;
-        document.getElementById('gameFrame').src = url;
-        document.getElementById('gameFrameContainer').style.display = 'block';
-      }
-
-      function closeGame() {
-        document.getElementById('gameFrameContainer').style.display = 'none';
-        document.getElementById('gameFrame').src = '';
-      }
-
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeGame();
-      });
-    });
-
-    let currentActivity = null;
-
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'gameResult') {
-        const { activity, score } = event.data;
-        if (score >= 25) {
-          if (activity === 'board') {
-            STATE.boardStatus = 'completed';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'completed';
-          }
-          alert('Well done! 🎉');
-        } else {
-          if (activity === 'board') {
-            STATE.boardStatus = 'in_progress';
-          } else if (activity === 'tablet') {
-            STATE.tabletStatus = 'in_progress';
-          }
-          alert('Keep trying... 😟');
+        if (e.key === 'Escape') {
+          closeGame();
+          closePreview();
+          closeTeacher();
         }
-        saveState();
-        updateUI();
-        document.getElementById('gameFrameContainer').style.display = 'none';
-        document.getElementById('gameFrame').src = '';
-      }
+      });
     });
   </script>
 </body>
